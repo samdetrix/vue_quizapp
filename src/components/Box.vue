@@ -14,7 +14,10 @@
                     v-for="(answer, index) in answers"
                     :key="index"
                     @click="answer_submit(index)"
-                    :class="[selectedIndex===index ? 'selected' : '' ]"
+                    :class="answeredClass(index)"
+                    
+                    
+                  
                     >
                     {{ answer }}
                 </b-list-group-item>               
@@ -23,6 +26,7 @@
 
             <b-button 
             @click="submitAnswer"
+            :disabled="selectedIndex === null || answered"
             variant="primary"            
             >Submit</b-button>
             <b-button @click.prevent="next" variant="success" href="#">Next</b-button>
@@ -44,7 +48,9 @@ export default Vue.extend({
     data(){
         return{
             selectedIndex: null,
-            shuffledAnswers: []
+            shuffledAnswers: [],
+            answered: false,
+            correctIndex: null
         }
     },
     computed:{
@@ -61,6 +67,7 @@ export default Vue.extend({
             handler(){
                 this.selectedIndex=null
                 this.shuffleAnswers()
+                this.answered=false
             }
         }
     },
@@ -76,14 +83,28 @@ export default Vue.extend({
             if(this.selectedIndex===this.correctIndex){
                 isCorrect =true
             }
+            this.answered = true
             this.increament(isCorrect)
+            
         },
         shuffleAnswers(){
                 let answers =[...this.currentQuestion.incorrect_answers, this.currentQuestion.correct_answer]
                 this.shuffledAnswers = _.shuffle(answers)
                 this.correctIndex = this.shuffledAnswers.indexOf(this.currentQuestion.correct_answer)
         },
-
+        
+        answeredClass(index){
+            let answeredClass = ''
+            if (!this.answered && this.selectedIndex === index) {
+                answeredClass = 'selected'
+            } else if (this.answered && this.correctIndex === index) {
+                answeredClass = 'correct'
+            } else if (this.answered && this.selectedIndex===index && this.correctIndex !== index) {
+                answeredClass = 'incorrect'
+            } 
+                return answeredClass
+            
+        }
         
     },
     
@@ -105,10 +126,10 @@ export default Vue.extend({
         cursor: pointer;
     }
     .selected{
-        background-color: skyblue;
+        background-color: rgb(156, 172, 179);
     }
     .correct{
-        background-color: lightpink;
+        background-color: skyblue;
     }
     .incorrect{
         background-color:lightcoral;
